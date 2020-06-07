@@ -32,11 +32,12 @@ public class AutoUpdateService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        updateWeather();
-        updateBingPic();
+        updateWeather();    //更新天气
+        updateBingPic();    //更新背景图片
+        //定时任务
         AlarmManager manager = (AlarmManager) getSystemService(ALARM_SERVICE);
         int anHour = 60 * 60 * 1000;
-        long triggerAtTime = SystemClock.elapsedRealtime() + anHour;
+        long triggerAtTime = SystemClock.elapsedRealtime() + anHour;     //设置触发时间
         Intent i = new Intent(this,AutoUpdateService.class);
         PendingIntent pi = PendingIntent.getService(this,0,i,0);
         manager.cancel(pi);
@@ -48,6 +49,7 @@ public class AutoUpdateService extends Service {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather",null);
         if(weatherString != null){
+            //有缓存时直接解析天气数据
             Weather weather = Utility.handleWeatherResponse(weatherString);
             String weatherId = weather.basic.weatherId;
             String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "2af15800f52344a58c163fe1bf6b8f24";
@@ -62,6 +64,7 @@ public class AutoUpdateService extends Service {
                     final String responseText = response.body().string();
                     final Weather weather = Utility.handleWeatherResponse(responseText);
                     if (weather != null && "ok".equals(weather.status)){
+                        //缓存有效的weather对象（实际上缓存的时字符串）
                         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(AutoUpdateService.this).edit();
                         editor.putString("weather",responseText);
                         editor.apply();
